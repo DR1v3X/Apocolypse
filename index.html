@@ -1,0 +1,206 @@
+<html>
+<head>
+
+  <title>Xombie</title>
+  <style>
+    body {
+      width:100%;
+      height:100%;
+      background-image: url("Background.jpg");
+      background-size: contain;
+      overflow: hidden;
+    }
+
+    .Xombie{
+      position:absolute;
+      user-drag:none;
+      user-select:none;
+    }
+    #startButton{
+      width:300px;
+      height:120px;
+      background-color:black;
+      color:white;
+      position:absolute;
+      top:calc(50% - 60px);
+      left:calc(50% - 150px);
+      font-size:50px;
+    }
+
+    #time{
+      width:180px;
+      height:80px;
+      background-color:black;
+      color:white;
+      position:absolute;
+      top:calc(20% - 90px);
+      right:calc(5% - 40px);
+      font-size:35px;
+      text-align:center;
+      line-height:80px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <button id="startButton">Begin</button>
+
+  <div id="time"></div>
+
+  <audio autoplay loop>
+    <source src="background.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="shoti">
+    <source src="shotgun.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="ded">
+    <source src="xombieDies.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    var levels=[
+        {
+          time:15,
+          Xombie:7,
+          title:"lvl 1",
+          move:false,
+          speed:0
+        },
+        {
+          time:35,
+          Xombie:15,
+          title:"lvl 2",
+          move:true,
+          speed:.75
+        },
+        {
+          time:60,
+          Xombie:25,
+          title:"lvl 3",
+          move:true,
+          speed:1.25
+        },
+        {
+          time:120,
+          Xombie:32,
+          title:"lvl 4",
+          move:true,
+          speed:1.5
+        },
+        {
+          time:145,
+          Xombie:50,
+          title:"lvl 5",
+          move:true,
+          speed:1.75
+        }
+
+    ]
+    var currentLevel=0;
+    var currentTime=0;
+    var xombieCount=0;
+    var timerId;
+    var body=document.getElementsByTagName("body")[0];
+    var dedSound=document.getElementById("ded");
+    var startButton=document.getElementById("startButton");
+    var time=document.getElementById("time");
+    var shotiSound=document.getElementById("shoti");
+    body.addEventListener("click", function(){
+      shotiSound.play();
+    })
+    startButton.addEventListener("click", function(){
+      startLevel();
+      this.style.display="none";
+    })
+
+    function startLevel(){
+      xombieCount=0;
+      var zombies=document.querySelectorAll(".Xombie");
+        for(var i=0; i<zombies.length; i++){
+          console.log("update");
+          var zombie=zombies[i];
+          zombie.remove();
+        }
+
+      for(var i=0; i<levels[currentLevel].Xombie; i++){
+          createXombie();
+      }
+
+      if(levels[currentLevel].move == true){
+        setInterval(movezombies,300);
+      }
+
+      currentTime=levels[currentLevel].time;
+      updateTime();
+      timerId=setInterval(updateTime,1000);
+
+    }
+
+    function createXombie(){
+
+        var image= new Image();
+        image.src="xombie_small.png";
+        image.className="Xombie";
+        image.setAttribute("ondragstart","return false;");
+
+        var y=Math.floor(Math.random() * 100);
+        var x=Math.floor(Math.random() * 100);
+
+        image.style.top=y+"%";
+        image.style.left=x+"%";
+
+        body.appendChild(image);
+        image.addEventListener("click", killXombie);
+
+    }
+    function killXombie(event){
+      dedSound.play();
+      this.remove();
+      xombieCount++;
+      if(xombieCount ==levels[currentLevel].Xombie){
+        startButton.innerHTML="Victory Play Next Level";
+        clearInterval(timerId);
+        startButton.style.display="block";
+        currentLevel++;
+      }
+    }
+    function movezombies(){
+      var zombies=document.getElementsByClassName("Xombie");
+      //console.log(zombies);
+      for(var i=0; i<zombies.length; i++){
+        var zombie=zombies[i];
+
+        var RNG=Math.floor(Math.random() * 2);
+        if(RNG==1){
+          if(parseFloat(zombie.style.left) <= 1) continue;
+          zombie.style.left=parseFloat(zombie.style.left)-levels[currentLevel].speed+"%";
+        }else{
+          if(parseFloat(zombie.style.left) >= 95) continue;
+          zombie.style.left=parseFloat(zombie.style.left)+levels[currentLevel].speed+"%";
+        }
+      }
+    }
+
+    function updateTime(){
+      if(currentTime<0){
+        startButton.innerHTML="FAIL";
+        startButton.style.display="block";
+        currentLevel=0;
+        clearInterval(timerId);
+        return;
+      }
+      time.innerHTML=currentTime;
+      currentTime--;
+    }
+
+  </script>
+
+</body>
+
+
+</html>
